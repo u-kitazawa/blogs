@@ -1,0 +1,21 @@
+---
+export type Props = { tags: { name: string; id: string }[] };
+
+const { tags } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-2 h-fit">
+  {
+    tags &&
+      tags.map((tag) => {
+        return (
+          <a
+            href={`/blog/?tag=${tag.id}`}
+            class="bg-neutral-900 text-neutral-100 px-2 py-1 rounded-lg text-[11px] sm:text-xs decoration-transparent h-fit"
+          >
+            {tag.name}
+          </a>
+        );
+      })
+  }
+</div>

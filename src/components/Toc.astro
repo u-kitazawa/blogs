@@ -1,0 +1,101 @@
+---
+// components/Toc.astro
+interface Props {
+  toc: { depth: number; text: string; id: string }[];
+  fullWidth?: boolean;
+}
+
+const { toc, fullWidth = false } = Astro.props;
+---
+
+{
+  toc && (
+    <div
+      class="max-h-[80vh] overflow-y-auto border-gray-200 px-4"
+      id="toc-container"
+    >
+      <ul class="flex flex-col gap-2 text-sm" id="toc-list">
+        {toc.map((item) => (
+          <li class={`depth-${item.depth}`}>
+            <a
+              href={`#${item.id}`}
+              class={`toc-link transition-colors duration-200 block truncate ${fullWidth ? "w-full" : "w-50"}`}
+              title={item.text}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+<style>
+  .depth-1 {
+    padding-left: 1rem;
+  }
+  .depth-2 {
+    padding-left: 1rem;
+  }
+  .depth-3 {
+    padding-left: 2rem;
+  }
+  .depth-4 {
+    padding-left: 3rem;
+  }
+  .depth-5 {
+    padding-left: 2.5rem;
+  }
+  .depth-6 {
+    padding-left: 3rem;
+  }
+
+  #toc-container {
+    /* レイヤーを独立させ、スクロール時のGPU負荷を下げる */
+    will-change: transform;
+    contain: content;
+  }
+
+  .toc-link {
+    /* リンクのホバーやクラス切り替え時の再描画を抑制 */
+    will-change: color;
+    display: block;
+  }
+</style><script>
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const headings = document.querySelectorAll("h1, h2, h3, h4");
+
+  // スクロール時のハイライトをrequestAnimationFrameで制御
+  let activeId = "";
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.target.id !== activeId) {
+          activeId = entry.target.id;
+
+          // クラス操作をDOM更新を最小限にするためにバッチ処理
+          requestAnimationFrame(() => {
+            tocLinks.forEach((link) => {
+              const isActive = link.getAttribute("href") === `#${activeId}`;
+              link.classList.toggle("text-blue-600", isActive);
+            });
+          });
+        }
+      });
+    },
+    { rootMargin: "-20px 0px -70% 0px", threshold: 0 },
+  );
+
+  headings.forEach((heading) => observer.observe(heading));
+
+  // クリック時のクラス操作
+  document.getElementById("toc-list")?.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest(".toc-link");
+    if (link) {
+      tocLinks.forEach((l) => l.classList.remove("text-blue-600"));
+      link.classList.add("text-blue-600");
+    }
+  });
+</script>

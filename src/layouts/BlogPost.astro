@@ -1,86 +1,147 @@
 ---
-import { Image } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
+import { Image } from "astro:assets";
+import Layout from "../layouts/Layout.astro";
+import Toc from "../components/Toc.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import type { CollectionEntry } from "astro:content";
+import Tags from "../components/Tags.astro";
+import { getMetadata } from "../libs/cms/microcms";
 
-type Props = CollectionEntry<'blog'>['data'];
+export type Props = CollectionEntry<"blog">["data"];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, createdAt, updatedAt, eyecatch, tags, toc } = Astro.props;
+const metadata = await getMetadata();
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
-	</head>
+<Layout
+  title={title}
+  siteTitle={metadata.title}
+  siteDescription={metadata.description}
+  footerCredit={metadata.credit}
+>
+  <article class="w-full max-w-4xl px-4 py-8 lg:ml-auto">
+    <div>
+      {
+        eyecatch && (
+          <Image
+            width={1020}
+            height={510}
+            src={eyecatch.url}
+            alt=""
+            class="border-neutral-200 border-2 rounded-xl h-127.5 object-cover"
+          />
+        )
+      }
+    </div>
+    <div class="prose max-w-none">
+      <div class="mt-5">
+        <h1 class="text-3xl sm:text-4xl">{title}</h1>
+        <div
+          class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <Tags tags={tags ?? []} />
+          <div
+            class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 sm:text-sm"
+          >
+            <FormattedDate date={createdAt ?? new Date()} />
+            {
+              updatedAt && (
+                <div class="last-updated-on whitespace-nowrap">
+                  最終更新: <FormattedDate date={new Date(updatedAt)} />
+                </div>
+              )
+            }
+          </div>
+        </div>
+        <hr />
+      </div>
+      <slot />
+    </div>
+  </article>
+  <div
+    class="hidden h-dvh lg:sticky lg:top-0 lg:left-0 lg:flex lg:items-center lg:justify-center lg:will-change-transform"
+  >
+    <Toc toc={toc ?? []} />
+  </div>
+  <div class="lg:hidden">
+    <button
+      type="button"
+      id="toc-open-button"
+      class="fixed bottom-4 right-4 z-40 inline-flex items-center rounded-full border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 shadow-lg shadow-black/10"
+      aria-controls="toc-overlay"
+      aria-expanded="false"
+    >
+      目次
+    </button>
+    <div
+      id="toc-overlay"
+      class="fixed inset-0 z-50 hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="toc-overlay-title"
+    >
+      <button
+        type="button"
+        id="toc-overlay-backdrop"
+        class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        aria-label="目次を閉じる"></button>
+      <div
+        class="relative mx-4 mt-20 rounded-2xl border border-neutral-200 bg-white p-4 shadow-2xl"
+      >
+        <div class="mb-4 flex items-center justify-between gap-4">
+          <h2
+            id="toc-overlay-title"
+            class="text-sm font-semibold text-neutral-700"
+          >
+            目次
+          </h2>
+          <button
+            type="button"
+            id="toc-close-button"
+            class="rounded-full px-3 py-1 text-sm text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+          >
+            閉じる
+          </button>
+        </div>
+        <Toc toc={toc ?? []} fullWidth />
+      </div>
+    </div>
+  </div>
+</Layout>
+<script>
+  const openButton = document.getElementById("toc-open-button");
+  const overlay = document.getElementById("toc-overlay");
+  const closeButton = document.getElementById("toc-close-button");
+  const backdrop = document.getElementById("toc-overlay-backdrop");
 
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
-					</div>
-					<slot />
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+  if (openButton && overlay) {
+    const openOverlay = () => {
+      overlay.classList.remove("hidden");
+      openButton.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
+    };
+
+    const closeOverlay = () => {
+      overlay.classList.add("hidden");
+      openButton.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
+    };
+
+    openButton.addEventListener("click", openOverlay);
+    closeButton?.addEventListener("click", closeOverlay);
+    backdrop?.addEventListener("click", closeOverlay);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !overlay.classList.contains("hidden")) {
+        closeOverlay();
+      }
+    });
+
+    overlay.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest(".toc-link")) {
+        closeOverlay();
+      }
+    });
+  }
+</script>

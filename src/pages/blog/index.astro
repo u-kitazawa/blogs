@@ -1,114 +1,83 @@
 ---
-import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import Tags from "../../components/Tags.astro";
+import FormattedDate from "../../components/FormattedDate.astro";
+import { getMetadata } from "../../libs/cms/microcms";
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const tagId = Astro.url.searchParams.get("tag");
+const metadata = await getMetadata();
+
+const posts = await getCollection("blog", ({ data }) => {
+  if (!tagId) return true;
+  return data.tags?.some(
+    (tag: { id: string; name: string }) => tag.id === tagId,
+  );
+});
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+<Layout
+  title={metadata.title}
+  description={metadata.description}
+  siteTitle={metadata.title}
+  siteDescription={metadata.description}
+  footerCredit={metadata.credit}
+>
+  <section class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mb-8 flex flex-col gap-3">
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        記事一覧
+      </h1>
+    </div>
+
+    <ul
+      id="post-list"
+      class="divide-y divide-slate-200 border-b border-slate-200"
+    >
+      {
+        posts.map((post) => (
+          <li
+            data-tags={post.data.tags?.map((t) => t.id).join(",")}
+            class="post-item"
+          >
+            <a
+              href={`/blog/${post.id}/`}
+              class="flex py-4 transition hover:text-slate-700 focus-visible:outline-none "
+            >
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col lg:flex-row gap-1 w-full items-center justify-between">
+                  <h2 class="text-base font-medium leading-6 text-slate-900">
+                    {post.data.title}
+                  </h2>
+                  <Tags tags={post.data.tags ?? []} />
+                </div>
+                <time
+                  datetime={post.data.createdAt?.toISOString()}
+                  class="shrink-0 text-sm text-slate-500"
+                >
+                  <FormattedDate date={new Date(post.data.createdAt ?? "")} />
+                </time>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Layout>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const tagId = params.get("tag");
+
+  if (tagId) {
+    const posts = document.querySelectorAll<HTMLElement>(
+      "#post-list .post-item",
+    );
+    posts.forEach((post) => {
+      const tags = post.dataset.tags ? post.dataset.tags.split(",") : [];
+      if (!tags.includes(tagId)) {
+        post.style.display = "none";
+      }
+    });
+  }
+</script>
