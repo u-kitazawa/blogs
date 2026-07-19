@@ -1,63 +1,64 @@
-# Astro Starter Kit: Blog
+# ブログ
 
-```sh
-npm create astro@latest -- --template blog
+Astro + TailwindCSS + microCMS で作ったブログです。
+
+## 概要
+
+SSG（静的サイトジェネレーター）である [Astro](https://astro.build/) を使って作成されたブログです。
+microCMSのデータを使用し，ビルド時に静的なHTMLを生成します．
+記事の執筆には [MDX](https://mdxjs.com/) を使用しており，Reactコンポーネントを埋め込むことができます．
+シンタックスハイライトなど，基本的なMarkdownの機能はサポートされています．
+
+## 環境構築
+
+### 1. リポジトリをクローンする
+
+```bash
+git clone https://github.com/<USERNAME>/blogs.git
+cd blogs
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+### 2. 環境変数を設定する
 
-Features:
+`.env` ファイルを作成し、以下の内容を記述してください。
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```bash
+MICROCMS_SERVICE_DOMAIN=domain # .microcms.io は含まない値
+MICROCMS_API_KEY=api_key # microCMS の API キー
+SITE_URL=https://example.com # デプロイ先のURL
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+### 3. microCMS の設定
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+#### 3.1. metadataのコンテンツを作成します．
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+- title / テキストフィールド: サイトのタイトル
+- description / テキストフィールド: サイトの説明
+- aboutme / テキストエリア: 自己紹介（Aboutページに表示されます）
+- eyecatch / テキストフィールド: サイトの画像（URL）
+- credit / テキストフィールド: サイトのクレジット（フッターに表示されます）
 
-Any static assets, like images, can be placed in the `public/` directory.
+#### 3.2. カテゴリのコンテンツを作成します．
 
-## 🧞 Commands
+- name / テキストフィールド: カテゴリ名
 
-All commands are run from the root of the project, from a terminal:
+#### 3.3. ブログのコンテンツを作成します．
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- title / テキストフィールド: 記事のタイトル
+- eyecatch / 画像フィールド: 記事のアイキャッチ画像
+- content / テキストエリア: 記事の本文
+- tags / 複数コンテンツ参照・カテゴリ: 記事のタグ（任意）
 
-## 👀 Want to learn more?
+### 4. 実行
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```bash
+npm run dev
+```
 
-## Credit
+または
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+```bash
+npm run build
+npm run preview
+```
