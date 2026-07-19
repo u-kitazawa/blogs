@@ -1,5 +1,5 @@
 import type { Loader } from "astro/loaders";
-import { BlogSchema, BlogMinSchema, type Blog, type BlogMin } from "./schema";
+import { BlogSchema, type Blog } from "./schema";
 import { getBlogDetail, getBlogs } from "./microcms";
 import { renderMarkdown } from "../markdown/render";
 
