@@ -6,7 +6,8 @@ import remarkMath from "remark-math";
 import remarkToc from "remark-toc";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
-import rehypeShiki from "@shikijs/rehype";
+// import rehypeShiki from "@shikijs/rehype";
+import rehypePrism from "rehype-prism-plus";
 import rehypeKatex from "rehype-katex";
 import rehypeStringify from "rehype-stringify";
 import { visit } from "unist-util-visit"; // 追加
@@ -53,7 +54,7 @@ export async function renderMarkdown(rawContent: string) {
       behavior: "append",
       properties: { class: "anchor" },
     })
-    .use(rehypeShiki, { theme: "github-dark" })
+    .use(rehypePrism)
     .use(rehypeKatex)
     .use(() => (tree) => {
       visit(tree, "element", (node: Element, index, parent) => {
